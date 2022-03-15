@@ -34,17 +34,17 @@ public class MoveListener implements Listener {
 
 			UUID uuid = p.getUniqueId();
 
-			if (this.instance.challengeStatus.get(uuid) == null)
+			if (!this.instance.challengeStatus.containsKey(uuid))
 				return;
 
 			ChallengeStatus status = this.instance.challengeStatus.get(uuid);
-			String tBlock = this.instance.targetBlock.get(uuid);
+			Material type = this.instance.targetBlock.get(uuid);
 			Material relativeBlock = p.getLocation().getBlock().getRelative(BlockFace.DOWN).getBlockData().getMaterial();
 			Material inPlayerBlock = p.getLocation().getBlock().getType();
 			if (status != ChallengeStatus.SEARCHING)
 				return;
 
-			if (relativeBlock == Material.valueOf(tBlock) || inPlayerBlock == Material.valueOf(tBlock)) {
+			if (relativeBlock == type || inPlayerBlock == type) {
 				// PLAYER FOUND BLOCK
 				this.instance.challengeStatus.put(uuid, ChallengeStatus.FOUND);
 				Bukkit.broadcastMessage(this.instance.getMessage("blockFind").replace("PLAYERNAME", p.getName()));

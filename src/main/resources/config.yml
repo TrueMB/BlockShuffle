@@ -7,11 +7,11 @@ Messages:
      noPermission: '&cDir fehlen Permissions.'
      twoDidntFindBlock: '&6Es hat niemand seinen Block gefunden! Nächste Runde startet...'
      twoFoundBlock: '&6Mindestens zwei Spieler haben den Block gefunden! Nächste Runde startet...'
-     blockGive: '&6Dein nächster Block lautet&7: &f&l'
+     blockGive: '&6Dein nächster Block lautet&7: &f&l%BLOCK%'
      blockNewGive: '&6Dein neuer nächster Block lautet&7: &f&l'
-     blockFind: '&f&lPLAYERNAME &6hat seinen Block gefunden!'
-     countdown: '&6Die Spieler haben noch &f&lTIME&6!'
-     win: '&f&lPLAYERNAME &6hat gewonnen!'
+     blockFind: '&f&l%PLAYERNAME% &6hat seinen Block gefunden!'
+     countdown: '&6Die Spieler haben noch &f&l%TIME%&6!'
+     win: '&f&l%PLAYERNAME% &6hat gewonnen!'
      lose: '&6Du hast leider verloren!'
      insufficientPlayer: '&cDu benötigst mindestens zwei Spieler zum starten.'
      isRunning: '&cEs läuft bereits ein Countdown.'
@@ -19,3 +19,6 @@ Messages:
      start: '&aBlock Shuffle startet!'
      stop: '&cBlock Shuffle wurde gestoppt!'
      help: '&6Bitte benutze &f&l/shuffle <start/stop>'
+
+#Do NOT touch
+ConfigVersion: 1

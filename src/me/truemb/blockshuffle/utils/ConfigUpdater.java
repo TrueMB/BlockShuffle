@@ -1,15 +1,13 @@
 package me.truemb.blockshuffle.utils;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.StringWriter;
+
+import com.google.common.base.Preconditions;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.plugin.Plugin;
+
+import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -19,33 +17,22 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
-
-import com.google.common.base.Preconditions;
-
 public class ConfigUpdater {
 	
 
     //Used for separating keys in the keyBuilder inside parseComments method
     private static final char SEPARATOR = '.';
 
-    public static void update(InputStream stream, File toUpdate, String... ignoredSections) throws IOException {
-        update(stream, toUpdate, Arrays.asList(ignoredSections));
+    public static void update(Plugin plugin, String resourceName, File toUpdate, String... ignoredSections) throws IOException {
+        update(plugin, resourceName, toUpdate, Arrays.asList(ignoredSections));
     }
 
-    public static void update(InputStream resource, File toUpdate, List<String> ignoredSections) throws IOException {
+    public static void update(Plugin plugin, String resourceName, File toUpdate, List<String> ignoredSections) throws IOException {
         Preconditions.checkArgument(toUpdate.exists(), "The toUpdate file doesn't exist!");
-        
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        resource.transferTo(baos);
-        InputStream inputStreamClone1 = new ByteArrayInputStream(baos.toByteArray()); 
-        InputStream inputStreamClone2 = new ByteArrayInputStream(baos.toByteArray()); 
 
-        FileConfiguration defaultConfig = YamlConfiguration.loadConfiguration(new InputStreamReader(inputStreamClone1, StandardCharsets.UTF_8));
+        FileConfiguration defaultConfig = YamlConfiguration.loadConfiguration(new InputStreamReader(plugin.getResource(resourceName), StandardCharsets.UTF_8));
         FileConfiguration currentConfig = YamlConfiguration.loadConfiguration(toUpdate);
-        Map<String, String> comments = parseComments(inputStreamClone2, defaultConfig);
+        Map<String, String> comments = parseComments(plugin, resourceName, defaultConfig);
         Map<String, String> ignoredSectionsValues = parseIgnoredSections(toUpdate, currentConfig, comments, ignoredSections == null ? Collections.emptyList() : ignoredSections);
 
         // will write updated config file "contents" to a string
@@ -115,8 +102,8 @@ public class ConfigUpdater {
     }
 
     //Returns a map of key comment pairs. If a key doesn't have any comments it won't be included in the map.
-    private static Map<String, String> parseComments(InputStream stream, FileConfiguration defaultConfig) throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
+    private static Map<String, String> parseComments(Plugin plugin, String resourceName, FileConfiguration defaultConfig) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(plugin.getResource(resourceName)));
         Map<String, String> comments = new LinkedHashMap<>();
         StringBuilder commentBuilder = new StringBuilder();
         KeyBuilder keyBuilder = new KeyBuilder(defaultConfig, SEPARATOR);

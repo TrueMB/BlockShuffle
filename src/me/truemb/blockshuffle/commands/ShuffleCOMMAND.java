@@ -5,14 +5,11 @@ import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.craftbukkit.v1_16_R2.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
 import me.truemb.blockshuffle.main.Main;
 import me.truemb.blockshuffle.runnable.GameRunnable;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.chat.TranslatableComponent;
 
 public class ShuffleCOMMAND implements CommandExecutor {
 	
@@ -68,15 +65,16 @@ public class ShuffleCOMMAND implements CommandExecutor {
 			}
 			
 			Player p = (Player) sender;
-			String tBlock = this.instance.getRandomBlock().toString();
-			this.instance.targetBlock.put(p.getUniqueId(), tBlock);
 			
-			net.minecraft.server.v1_16_R2.ItemStack nmsItem = CraftItemStack.asNMSCopy(new ItemStack(Material.valueOf(tBlock)));
-            TranslatableComponent comp = new TranslatableComponent(nmsItem.getItem().getName());			            
-            TextComponent main = new TextComponent(this.instance.getMessage("blockNewGive").replace("PLAYERNAME", p.getDisplayName()));
-            main.addExtra(comp);
-            main.addExtra(new TextComponent("!"));
-            p.spigot().sendMessage(main);
+			Material type = this.instance.getItemManager().getRandomPhysicalMaterial();
+			ItemStack item = new ItemStack(type);
+			
+			this.instance.targetBlock.put(p.getUniqueId(), type);
+
+			p.sendMessage(this.instance.getMessage("blockNewGive")
+					.replaceAll("(?i)%" + "playername" + "%", p.getDisplayName())
+					.replaceAll("(?i)%" + "block" + "%", this.instance.getItemManager().getClientItemName(item))
+					);
 			
 			return true;
 		}else {

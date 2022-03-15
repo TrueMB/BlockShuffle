@@ -3,7 +3,7 @@
   <groupId>me.truemb</groupId>
   <artifactId>blockshuffle</artifactId>
   <version>1.0.0</version>
-  <name>BlockShuffle</name>
+  <name>BlockShuffleMinigame</name>
   <description>A Small MiniGame for friends</description>
   
 	<properties>

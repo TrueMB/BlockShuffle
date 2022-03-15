@@ -6,7 +6,6 @@ import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_16_R2.inventory.CraftItemStack;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
@@ -14,7 +13,6 @@ import me.truemb.blockshuffle.enums.ChallengeStatus;
 import me.truemb.blockshuffle.main.Main;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.chat.TranslatableComponent;
 
 public class GameRunnable implements Runnable{
 	
@@ -22,6 +20,7 @@ public class GameRunnable implements Runnable{
 	private int shuffleTime;
 	
 	public GameRunnable(Main plugin) {
+		this.instance = plugin;
 		this.shuffleTime = this.instance.manageFile().getInt("Options.shuffleTime");
 		this.instance.fullReset();
 	}
@@ -37,25 +36,24 @@ public class GameRunnable implements Runnable{
 					
 					if (status == ChallengeStatus.IDLE && this.instance.targetBlock.get(uuid) == null) {
 						
-						//NEUE RUNDE
-						String tBlock = this.instance.getRandomBlock().toString();
-						this.instance.targetBlock.put(uuid, tBlock);
+						//NEW ROUND
+						Material type = this.instance.getItemManager().getRandomPhysicalMaterial();
+						ItemStack item = new ItemStack(type);
+						String itemName = this.instance.getItemManager().getClientItemName(item);
+						
+						this.instance.targetBlock.put(uuid, type);
 						this.instance.challengeStatus.put(uuid, ChallengeStatus.SEARCHING);
-						
-						net.minecraft.server.v1_16_R2.ItemStack nmsItem = CraftItemStack.asNMSCopy(new ItemStack(Material.valueOf(tBlock)));
-			            TranslatableComponent comp = new TranslatableComponent(nmsItem.getItem().getName());			            
-			            TextComponent main = new TextComponent(this.instance.getMessage("blockGive").replace("PLAYERNAME", all.getDisplayName()));
-			            main.addExtra(comp);
-			            main.addExtra(new TextComponent("!"));
-			            all.spigot().sendMessage(main);
-						
-						//all.sendMessage(this.instance.getMessage("blockGive").replace("PLAYERNAME", all.getDisplayName()).replace("TARGETBLOCK", tBlock));
+								            
+						all.sendMessage(this.instance.getMessage("blockGive")
+								.replaceAll("(?i)%" + "playername" + "%", all.getDisplayName())
+								.replaceAll("(?i)%" + "block" + "%", itemName != null ? itemName : "")
+								);
 					}
 				}
 				
 				
 				if(this.instance.tickCount <= this.shuffleTime && this.shuffleTime - this.instance.tickCount <= 10) 
-				    all.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(this.instance.getMessage("countdown").replace("TIME", String.valueOf(this.shuffleTime - this.instance.tickCount))));
+				    all.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(this.instance.getMessage("countdown").replaceAll("(?i)%" + "time" + "%", String.valueOf(this.shuffleTime - this.instance.tickCount))));
 			}
 			
 			if(this.instance.tickCount > this.shuffleTime) {
@@ -93,7 +91,7 @@ public class GameRunnable implements Runnable{
 				}
 				
 				if(found.size() == 1) {
-					Bukkit.broadcastMessage(this.instance.getMessage("win").replace("PLAYERNAME", found.get(0).getName()));
+					Bukkit.broadcastMessage(this.instance.getMessage("win").replaceAll("(?i)%" + "playername" + "%", found.get(0).getName()));
 					this.instance.fullReset();
 					this.instance.task.cancel();
 				}
