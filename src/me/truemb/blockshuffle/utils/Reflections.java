@@ -1,7 +1,6 @@
 package me.truemb.blockshuffle.utils;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -9,12 +8,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 public class Reflections {
-	
-    public static Field modifiers = getField( Field.class, "modifiers" );
-
-    static {
-        setAccessible( true, modifiers );
-    }
 
     public static Class< ? > getNMSClass( String name ) {
         String version = Bukkit.getServer().getClass().getPackage().getName().split( "\\." )[ 3 ];
@@ -47,9 +40,9 @@ public class Reflections {
     public static void setField( Object change, String name, Object to ) {
         try {
             Field field = getField( change.getClass(), name );
-            setAccessible( true, field );
+            field.setAccessible(true);
             field.set( change, to );
-            setAccessible( false, field);
+            field.setAccessible(false);
         } catch( Exception ex ) {
             ex.printStackTrace();
         }
@@ -59,15 +52,12 @@ public class Reflections {
         try {
             for( Field field : fields ) {
                 field.setAccessible( state );
-                if( Modifier.isFinal( field.getModifiers() ) ) {
-                    modifiers.set( field, field.getModifiers() & ~Modifier.FINAL );
-                }
             }
         } catch( Exception ex ) {
             ex.printStackTrace();
         }
     }
-
+    
     public static Field getField( Class< ? > clazz, String name ) {
         Field field = null;
 
@@ -84,11 +74,11 @@ public class Reflections {
 
     public static List< Field > getFields( Class< ? > clazz ) {
         List< Field > buf = new ArrayList<>();
-
         do {
             try {
-                for( Field f : clazz.getDeclaredFields() )
+                for( Field f : clazz.getDeclaredFields() ) {
                     buf.add( f );
+                }
             } catch( Exception ex ) {}
         } while( ( clazz = clazz.getSuperclass() ) != null );
 

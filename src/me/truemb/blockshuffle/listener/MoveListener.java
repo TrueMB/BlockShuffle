@@ -13,9 +13,14 @@ import org.bukkit.event.player.PlayerMoveEvent;
 
 import me.truemb.blockshuffle.enums.ChallengeStatus;
 import me.truemb.blockshuffle.main.Main;
-import me.truemb.blockshuffle.utils.PlayerManager;
 
 public class MoveListener implements Listener {
+	
+	private Main instance;
+	
+	public MoveListener(Main plugin) {
+		this.instance = plugin;
+	}
 
 	@EventHandler
 	public void onMove(PlayerMoveEvent e) {
@@ -27,30 +32,29 @@ public class MoveListener implements Listener {
 
 		if (from.getX() != to.getX() || from.getY() != to.getY() || from.getZ() != to.getZ()) {
 
-			UUID uuid = PlayerManager.getUUID(p.getName());
+			UUID uuid = p.getUniqueId();
 
-			if (Main.getPlugin().challengeStatus.get(PlayerManager.getUUID(p.getName())) == null)
+			if (this.instance.challengeStatus.get(uuid) == null)
 				return;
 
-			ChallengeStatus status = Main.getPlugin().challengeStatus.get(uuid);
-			String tBlock = Main.getPlugin().targetBlock.get(uuid);
-			Material relativeBlock = p.getLocation().getBlock().getRelative(BlockFace.DOWN).getBlockData()
-					.getMaterial();
+			ChallengeStatus status = this.instance.challengeStatus.get(uuid);
+			String tBlock = this.instance.targetBlock.get(uuid);
+			Material relativeBlock = p.getLocation().getBlock().getRelative(BlockFace.DOWN).getBlockData().getMaterial();
 			Material inPlayerBlock = p.getLocation().getBlock().getType();
 			if (status != ChallengeStatus.SEARCHING)
 				return;
 
 			if (relativeBlock == Material.valueOf(tBlock) || inPlayerBlock == Material.valueOf(tBlock)) {
 				// PLAYER FOUND BLOCK
-				Main.getPlugin().challengeStatus.put(uuid, ChallengeStatus.FOUND);
-				Bukkit.broadcastMessage(Main.getPlugin().getMessage("blockFind").replace("PLAYERNAME", p.getName()));
+				this.instance.challengeStatus.put(uuid, ChallengeStatus.FOUND);
+				Bukkit.broadcastMessage(this.instance.getMessage("blockFind").replace("PLAYERNAME", p.getName()));
 
 				// PLAYER STILL SEARCHING?
 				for (Player all : Bukkit.getOnlinePlayers()) {
-					UUID uuids = PlayerManager.getUUID(all.getName());
+					UUID uuids = all.getUniqueId();
 
-					if (Main.getPlugin().challengeStatus.get(uuids) != null) {
-						ChallengeStatus allStatus = Main.getPlugin().challengeStatus.get(uuids);
+					if (this.instance.challengeStatus.get(uuids) != null) {
+						ChallengeStatus allStatus = this.instance.challengeStatus.get(uuids);
 
 						if (allStatus == ChallengeStatus.SEARCHING)
 							return;
@@ -58,8 +62,8 @@ public class MoveListener implements Listener {
 				}
 
 				// NO PLAYER SEARCHING
-				Bukkit.broadcastMessage(Main.getPlugin().getMessage("twoFoundBlock"));
-				Main.getPlugin().reset();
+				Bukkit.broadcastMessage(this.instance.getMessage("twoFoundBlock"));
+				this.instance.reset();
 			}
 
 		}

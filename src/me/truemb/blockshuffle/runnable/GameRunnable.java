@@ -12,63 +12,63 @@ import org.bukkit.inventory.ItemStack;
 
 import me.truemb.blockshuffle.enums.ChallengeStatus;
 import me.truemb.blockshuffle.main.Main;
-import me.truemb.blockshuffle.utils.PlayerManager;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.chat.TranslatableComponent;
 
 public class GameRunnable implements Runnable{
 	
+	private Main instance;
 	private int shuffleTime;
 	
-	public GameRunnable() {
-		this.shuffleTime = Main.getPlugin().manageFile().getInt("Options.shuffleTime");
-		Main.getPlugin().fullReset();
+	public GameRunnable(Main plugin) {
+		this.shuffleTime = this.instance.manageFile().getInt("Options.shuffleTime");
+		this.instance.fullReset();
 	}
 
 	@Override
 	public void run() {
 			
 			for (Player all : Bukkit.getOnlinePlayers()) {
-				UUID uuid = PlayerManager.getUUID(all.getName());
+				UUID uuid = all.getUniqueId();
 				
-				if(Main.getPlugin().challengeStatus.get(uuid) != null) {
-					ChallengeStatus status = Main.getPlugin().challengeStatus.get(uuid);
+				if(this.instance.challengeStatus.get(uuid) != null) {
+					ChallengeStatus status = this.instance.challengeStatus.get(uuid);
 					
-					if (status == ChallengeStatus.IDLE && Main.getPlugin().targetBlock.get(uuid) == null) {
+					if (status == ChallengeStatus.IDLE && this.instance.targetBlock.get(uuid) == null) {
 						
 						//NEUE RUNDE
-						String tBlock = Main.getPlugin().getRandomBlock().toString();
-						Main.getPlugin().targetBlock.put(uuid, tBlock);
-						Main.getPlugin().challengeStatus.put(uuid, ChallengeStatus.SEARCHING);
+						String tBlock = this.instance.getRandomBlock().toString();
+						this.instance.targetBlock.put(uuid, tBlock);
+						this.instance.challengeStatus.put(uuid, ChallengeStatus.SEARCHING);
 						
 						net.minecraft.server.v1_16_R2.ItemStack nmsItem = CraftItemStack.asNMSCopy(new ItemStack(Material.valueOf(tBlock)));
 			            TranslatableComponent comp = new TranslatableComponent(nmsItem.getItem().getName());			            
-			            TextComponent main = new TextComponent(Main.getPlugin().getMessage("blockGive").replace("PLAYERNAME", all.getDisplayName()));
+			            TextComponent main = new TextComponent(this.instance.getMessage("blockGive").replace("PLAYERNAME", all.getDisplayName()));
 			            main.addExtra(comp);
 			            main.addExtra(new TextComponent("!"));
 			            all.spigot().sendMessage(main);
 						
-						//all.sendMessage(Main.getPlugin().getMessage("blockGive").replace("PLAYERNAME", all.getDisplayName()).replace("TARGETBLOCK", tBlock));
+						//all.sendMessage(this.instance.getMessage("blockGive").replace("PLAYERNAME", all.getDisplayName()).replace("TARGETBLOCK", tBlock));
 					}
 				}
 				
 				
-				if(Main.getPlugin().tickCount <= this.shuffleTime && this.shuffleTime - Main.getPlugin().tickCount <= 10) 
-				    all.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(Main.getPlugin().getMessage("countdown").replace("TIME", String.valueOf(this.shuffleTime - Main.getPlugin().tickCount))));
+				if(this.instance.tickCount <= this.shuffleTime && this.shuffleTime - this.instance.tickCount <= 10) 
+				    all.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(this.instance.getMessage("countdown").replace("TIME", String.valueOf(this.shuffleTime - this.instance.tickCount))));
 			}
 			
-			if(Main.getPlugin().tickCount > this.shuffleTime) {
+			if(this.instance.tickCount > this.shuffleTime) {
 
 				List<Player> searching = new ArrayList<>();
 				List<Player> found = new ArrayList<>();
 				
 				for (int i = 0; i < Bukkit.getOnlinePlayers().size(); i++) {
 					Player p = (Player) Bukkit.getOnlinePlayers().toArray()[i];
-					UUID uuid = PlayerManager.getUUID(p.getName());
+					UUID uuid = p.getUniqueId();
 					
-					if(Main.getPlugin().challengeStatus.get(uuid) != null) {
-						ChallengeStatus status = Main.getPlugin().challengeStatus.get(uuid);
+					if(this.instance.challengeStatus.get(uuid) != null) {
+						ChallengeStatus status = this.instance.challengeStatus.get(uuid);
 						
 						if(status == ChallengeStatus.SEARCHING) {
 							searching.add(p);							
@@ -79,26 +79,26 @@ public class GameRunnable implements Runnable{
 				}
 				
 				if(found.size() >= 2) {
-					Bukkit.broadcastMessage(Main.getPlugin().getMessage("twoFoundBlock"));
+					Bukkit.broadcastMessage(this.instance.getMessage("twoFoundBlock"));
 				
 					for(Player searchingP : searching) {
-						searchingP.sendMessage(Main.getPlugin().getMessage("lose"));
-						Main.getPlugin().challengeStatus.put(PlayerManager.getUUID(searchingP.getName()), ChallengeStatus.LOST);
+						searchingP.sendMessage(this.instance.getMessage("lose"));
+						this.instance.challengeStatus.put(searchingP.getUniqueId(), ChallengeStatus.LOST);
 					}
-					Main.getPlugin().reset();
+					this.instance.reset();
 				}
 				if(found.size() == 0 && searching.size() >= 2) {
-					Bukkit.broadcastMessage(Main.getPlugin().getMessage("twoDidntFindBlock"));
-					Main.getPlugin().reset();
+					Bukkit.broadcastMessage(this.instance.getMessage("twoDidntFindBlock"));
+					this.instance.reset();
 				}
 				
 				if(found.size() == 1) {
-					Bukkit.broadcastMessage(Main.getPlugin().getMessage("win").replace("PLAYERNAME", found.get(0).getName()));
-					Main.getPlugin().fullReset();
-					Main.getPlugin().task.cancel();
+					Bukkit.broadcastMessage(this.instance.getMessage("win").replace("PLAYERNAME", found.get(0).getName()));
+					this.instance.fullReset();
+					this.instance.task.cancel();
 				}
 			}
 			
-			Main.getPlugin().tickCount++;
+			this.instance.tickCount++;
 	}
 }

@@ -1,0 +1,9 @@
+name: ${project.name}
+author: TrueMB
+version: ${project.version}
+api-version: 1.16
+main: me.truemb.blockshuffle.main.Main
+
+commands:
+   shuffle:
+      description: Starts/Stops Counter
