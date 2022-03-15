@@ -1,0 +1,9 @@
+main: me.truemb.blockshuffle.main.Main
+name: BlockShuffle
+version: 1.0
+api-version: 1.16
+author: TrueMB
+
+commands:
+   shuffle:
+      description: Starts/Stops Counter
